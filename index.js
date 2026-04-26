@@ -64,7 +64,7 @@ const fetchData = async (api_link) => {
     } catch(error) {
         console.error(error);
     }
-}
+} 
 
 
 fetchData(api_resolved(name)).then((res, rej) => {
