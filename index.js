@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
 const events = {
-    PushEvent: "commits",
-    PullRequestEvent: "PR opened",
-    IssuesEvent: "Issue opened",
-    WatchEvent: "Starred repository",
-    ForkEvent: "Forked"
+    PushEvent: "commits pushed to",
+    PullRequestEvent: "Requested PR in",
+    IssuesEvent: "Opened an issue in",
+    WatchEvent: "Starred",
+    ForkEvent: "Forked",
+    CreateEvent: "Created repo",
+    GollumEvent: "Gollumed at repo"
+
 }
 /* Handle arguments */
 
@@ -23,7 +26,7 @@ function collectInfo(data) {
 
         }
     })
-
+    
     return mappedData;
 }
 
@@ -31,6 +34,7 @@ function countCommits(data) {
     const commits = {};
 
     for (let obj of data ) {
+        
         if (!(obj.type ===  "PushEvent")) continue;
 
         if (commits[obj.repo]) commits[obj.repo] += 1;
@@ -39,9 +43,25 @@ function countCommits(data) {
 
     }
     
+    if (Object.keys(commits).length === 0) return false;
+
     return commits;
 }
 
+function handleLogging(data, commits) {
+    console.log(data);
+    for (let obj of data) {
+        if (!(obj["type"] === "PushEvent")) console.log(`${events[obj["type"]]} ${obj["repo"]}`);
+
+    }
+    
+    if (!Object.keys(commits).length) return;
+
+    for (let commit of Object.keys(commits)) {
+        console.log(`${commits[commit]} ${events["PushEvent"]} ${commit}`);
+    }
+
+}
 /* API Handle */
 
 /* https://api.github.com/users/<username>/events */
@@ -72,7 +92,7 @@ fetchData(api_resolved(name)).then((res, rej) => {
 
     const commits = countCommits(info);
 
-    console.log(commits);
+    handleLogging(info, commits);
 }).catch((err) => {
     console.error(err);
 });
